@@ -1,7 +1,8 @@
 const express = require("express")
+const dotenv = require('dotenv')
 
 const app = express()
-// app.use(dotenv())
+dotenv.config()
 const PORT = process.env.PORT || 5000
 
 const { ApolloServer } = require("apollo-server-express")
