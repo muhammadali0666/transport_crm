@@ -1,7 +1,7 @@
 const pool = require("../../db/db_config");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken")
-const {token} = require("../../utils/jwt")
+const { verify } = require("../../utils/jwt")
 
 const getUsers = async () => {
   let users = await pool.query(`select * from staffs`);
@@ -41,17 +41,27 @@ const authRegister = async ({
 
   await pool.query(
     `INSERT INTO permission_transport( staff_id ) VALUES($1)`,
-    [ info ]
+    [info]
+  )
+
+  await pool.query(
+    `INSERT INTO permission_transport( staff_id ) VALUES($1)`,
+    [info]
+  )
+
+  await pool.query(
+    `INSERT INTO permission_transport( staff_id ) VALUES($1)`,
+    [info]
   )
 
   await pool.query(
     `INSERT INTO permission_branches( staff_id ) VALUES($1)`,
-    [ info ]
+    [info]
   )
 
   await pool.query(
     `INSERT INTO  permission_permissions( staff_id ) VALUES($1)`,
-    [ info ]
+    [info]
   )
   return { msg: "User added!" };
 
@@ -69,7 +79,7 @@ const authLogin = async ({
   let users = await getUsers();
   let foundedUser = users.find((u) => u.staff_name === staff_name);
 
-  if(!foundedUser) {
+  if (!foundedUser) {
     return { msg: "user not found" }
   }
 
@@ -78,7 +88,7 @@ const authLogin = async ({
   if (checkhash) {
     let token = jwt.sign(
       { staff_id: foundedUser.staff_password, staff_name: staff_name, staff_password: staff_password },
-      process.env.SEKRET_KEY,
+      "SIRLI",
       {
         expiresIn: "24h",
       }
@@ -87,7 +97,7 @@ const authLogin = async ({
       msg: "Success",
       token: token,
     }
-  } else if(!checkhash) {
+  } else if (!checkhash) {
     return { msg: "Password wrong", }
   }
 
@@ -97,23 +107,37 @@ const authLogin = async ({
 };
 
 
-const createBranches = async ({branch_name,branch_address}) => {
+const createBranches = async ({ branch_name, branch_address, token, role }) => {
 
-    await pool.query(
-      `INSERT INTO branches(branch_name, branch_address) VALUES($1, $2) returning *`,
-      [branch_name, branch_address]
-    )
-    return { msg: "Branch added!" };
+  let userInfo = await verify(token)
+  if (!userInfo) return { msg: 'Token invalid!' }
+
+  let userRole = "super_admin"
+  if (role !== userRole) return { msg: 'Admin invalid!' }
+
+
+  await pool.query(
+    `INSERT INTO branches(branch_name, branch_address) VALUES($1, $2) returning *`,
+    [branch_name, branch_address]
+  )
+  return { msg: "Branch added!" };
 
 };
 
 
-const createTransport = async ({ auto_model, auto_branch_id, auto_color, auto_img}) => {
-    await pool.query(
-      `INSERT INTO transports(auto_model, auto_branch_id, auto_color, auto_img) VALUES($1, $2, $3, $4) returning *`,
-      [auto_model, auto_branch_id, auto_color, auto_img]
-    )
-    return { msg: "transport added!" };
+const createTransport = async ({ auto_model, auto_branch_id, auto_color, auto_img, token, role }) => {
+
+  let userInfo = await verify(token)
+  if (!userInfo) return { msg: 'Token invalid!' }
+
+  let userRole = "super_admin"
+  if (role !== userRole) return { msg: 'Admin invalid!' }
+
+  await pool.query(
+    `INSERT INTO transports(auto_model, auto_branch_id, auto_color, auto_img) VALUES($1, $2, $3, $4) returning *`,
+    [auto_model, auto_branch_id, auto_color, auto_img]
+  )
+  return { msg: "transport added!" };
 
 };
 

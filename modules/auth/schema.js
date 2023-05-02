@@ -32,8 +32,8 @@ module.exports = gql`
     getUser(userId: Int!): User,
     authRegister( staff_name: String!, staff_password: String!, branch_id: String!, bith_date: String!, staff_gender: String! ): Message,
     authLogin(staff_name: String!, staff_password: String!): Token,
-    createBranches(branch_name: String!, branch_address: String!): Message,
-    createTransport(auto_model: String!, auto_branch_id: String!, auto_color: String!, auto_img: String!): Message,
+    createBranches(branch_name: String!, branch_address: String!, token: String!, role: String!): Message,
+    createTransport(auto_model: String!, auto_branch_id: String!, auto_color: String!, auto_img: String!, token: String!, role: String!): Message,
     deleteUser( id: Int! ): Message,
     updateUser( id: Int!, username: String, password: String, email: String, age: Int ): Message,
    }
